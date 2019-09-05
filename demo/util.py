@@ -6,6 +6,19 @@ import mmcv
 import pycocotools.mask as maskUtils
 
 
+def expand_bbox(bbox, ratio, width, height):
+    x1, y1, x2, y2 = bbox
+    w = x2 - x1
+    h = y2 - y1
+    expand_w = (w * ratio) / 2
+    expand_h = (h * ratio) / 2
+    x1 = max(x1 - expand_w, 0)
+    y1 = max(y1 - expand_h, 0)
+    x2 = min(x2 + expand_w, width - 1)
+    y2 = min(y2 + expand_h, height - 1)
+    return np.asarray([x1, y1, x2, y2], dtype=np.int32)
+
+
 def save_result(img,
                 result,
                 class_names,
@@ -13,7 +26,9 @@ def save_result(img,
                 wait_time=0,
                 out_dir=None,
                 save_classes=None,
-                out_file=None):
+                out_file=None,
+                expand_ratio=0.3,
+                min_size=30):
     """Visualize the detection results on the image.
 
     Args:
@@ -28,6 +43,7 @@ def save_result(img,
     """
     assert isinstance(class_names, (tuple, list))
     img = mmcv.imread(img)
+    height, width, _ = img.shape
     if isinstance(result, tuple):
         bbox_result, segm_result = result
     else:
@@ -60,6 +76,11 @@ def save_result(img,
         bbox_int = bbox.astype(np.int32)
         left_top = (bbox_int[0], bbox_int[1])
         right_bottom = (bbox_int[2], bbox_int[3])
+        w = bbox_int[2] - bbox_int[0]
+        h = bbox_int[3] - bbox_int[1]
+        if w < min_size or h < min_size:
+            continue
+        e_bbox = expand_bbox(bbox_int[0:4], expand_ratio, width, height)
         # cv2.rectangle(
         #     img, left_top, right_bottom, bbox_color, thickness=thickness)
         label_text = class_names[
@@ -68,10 +89,10 @@ def save_result(img,
         #     label_text += '|{:.02f}'.format(bbox[-1])
         # cv2.putText(img, label_text, (bbox_int[0], bbox_int[1] - 2),
         #             cv2.FONT_HERSHEY_COMPLEX, font_scale, text_color)
-        crop_image = img[bbox_int[1]:bbox_int[3], bbox_int[0]:bbox_int[2]]
+        crop_image = img[e_bbox[1]:e_bbox[3], e_bbox[0]:e_bbox[2]]
         # t = time.asctime(time.localtime(time.time()))
         t = time.time()
-        filename = '{}_{:.02f}.jpg'.format(t, bbox[4])
+        filename = '{}_{:.4f}.jpg'.format(t, bbox[4])
         out_file = os.path.join(out_dir, label_text, filename)
         out_file = os.path.abspath(out_file)
         out_dir_label = os.path.join(out_dir, label_text)
