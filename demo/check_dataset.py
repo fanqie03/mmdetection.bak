@@ -64,7 +64,7 @@ def main():
     # build the dataloader
     # TODO: support multiple images per gpu (only minor changes are needed)
 
-    for type in ['train', 'val', 'test']:
+    for type in ['val', 'test', 'train']:
         dataset = build_dataset(cfg.data[type])
         d = dataset.get_ann_info(1)
         n = next(iter(dataset))
