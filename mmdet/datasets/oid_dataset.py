@@ -15,12 +15,18 @@ class OIDTDataset(CustomDataset):
     该数据集给予[OID_ToolKit](https://github.com/EscVM/OIDv4_ToolKit)项目
     """
 
-    CLASSES = ('Human head',)
+    CLASSES = ('Footwear',)
 
     def __init__(self, **kwargs):
         assert kwargs.get('class_description', None) is not None
         self.class_description = kwargs.pop('class_description')
+        classes = kwargs.pop('classes')
+        # classes = getattr(kwargs, 'classes')
+        # delattr(kwargs, 'classes')
         super(OIDTDataset, self).__init__(**kwargs)
+        # 更新classes
+        OIDTDataset.CLASSES = classes
+        pass
 
     def split_label_bbox(self, line):
         words = line.split(' ')
