@@ -109,6 +109,7 @@ train_pipeline = [
     dict(type='LoadAnnotations', with_bbox=True),
     dict(type='Resize', img_scale=(1333, 800), keep_ratio=True),
     dict(type='RandomFlip', flip_ratio=0.5),
+    # dict(type='PhotoMetricDistortion',),
     dict(type='Normalize', **img_norm_cfg),
     dict(type='Pad', size_divisor=32),
     dict(type='DefaultFormatBundle'),
@@ -136,25 +137,28 @@ data = dict(
         type=dataset_type,
         data_root=data_root,
         ann_file=data_root + 'csv_folder/train-annotations-bbox.csv',
-        img_prefix=data_root + 'Dataset/train/sub_footwear',
+        img_prefix=data_root + 'Dataset/train/Human head',
         class_description=class_description,
-        classes=('Footwear',),
+        persentage=0.1,
+        classes=('Human head',),
         pipeline=train_pipeline),
     val=dict(
         type=dataset_type,
         data_root=data_root,
         ann_file=data_root + 'csv_folder/validation-annotations-bbox.csv',
-        img_prefix=data_root + 'Dataset/validation/Footwear',
+        img_prefix=data_root + 'Dataset/validation/Human head',
         class_description=class_description,
-        classes=('Footwear',),
+        persentage=1,
+        classes=('Human head',),
         pipeline=test_pipeline),
     test=dict(
         type=dataset_type,
         data_root=data_root,
         ann_file=data_root + 'csv_folder/test-annotations-bbox.csv',
-        img_prefix=data_root + 'Dataset/test/Footwear',
+        img_prefix=data_root + 'Dataset/test/Human head',
         class_description=class_description,
-        classes=('Footwear',),
+        persentage=1,
+        classes=('Human head',),
         pipeline=test_pipeline))
 # optimizer
 optimizer = dict(type='SGD', lr=0.0025, momentum=0.9, weight_decay=0.0001)
@@ -179,7 +183,7 @@ log_config = dict(
 total_epochs = 24
 dist_params = dict(backend='nccl')
 log_level = 'INFO'
-work_dir = './work_dirs/faster_rcnn_r50_fpn_1x_Footwear_v2'
+work_dir = './work_dirs/faster_rcnn_r50_fpn_1x_Human_head_v2'
 load_from = None
 resume_from = None
 workflow = [('train', 1)]

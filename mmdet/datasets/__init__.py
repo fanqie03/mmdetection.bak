@@ -9,7 +9,8 @@ from .voc import VOCDataset
 from .wider_face import WIDERFaceDataset
 from .xml_style import XMLDataset
 from .my_dataset import MyDataset
-from .oid_dataset import OIDTDataset
+from .oid_dataset import OIDTDataset, OIDTDatasetV2
+from .fire_dataset import FireDataset
 
 __all__ = [
     'CustomDataset', 'XMLDataset', 'CocoDataset', 'VOCDataset',

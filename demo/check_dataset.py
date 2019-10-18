@@ -9,6 +9,7 @@ import torch
 import torch.distributed as dist
 from mmcv.parallel import MMDataParallel, MMDistributedDataParallel
 from mmcv.runner import get_dist_info, load_checkpoint
+import cv2
 
 from mmdet.apis import init_dist
 from mmdet.core import coco_eval, results2json, wrap_fp16_model
@@ -66,10 +67,23 @@ def main():
 
     for type in ['val', 'test', 'train']:
         dataset = build_dataset(cfg.data[type])
-        d = dataset.get_ann_info(1)
-        n = next(iter(dataset))
+        for i in range(5):
+            d = dataset.img_infos[i]
+            n = next(iter(dataset))
+            # filename = n['img_meta'][0].data['filename']
+            ann = d['ann']
+            bboxes = ann['bboxes']
+            labels = ann['labels']
+            filename = dataset.img_prefix + d['filename']
 
-        print(n)
+            img = cv2.imread(filename)
+            for bbox, label in zip(bboxes, labels):
+
+                cv2.rectangle(img, (bbox[0], bbox[1]), (bbox[2], bbox[3]), (0, 0, 255), )
+                cv2.putText(img, str(label), (bbox[0], bbox[1]), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255))
+            cv2.imshow('1', img)
+            cv2.waitKey()
+            print(n)
 
 
 if __name__ == '__main__':

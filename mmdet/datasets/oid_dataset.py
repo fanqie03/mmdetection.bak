@@ -17,18 +17,12 @@ class OIDTDataset(CustomDataset):
     该数据集给予[OID_ToolKit](https://github.com/EscVM/OIDv4_ToolKit)项目
     """
 
-    CLASSES = ('Footwear',)
+    CLASSES = ('Human head',)
 
     def __init__(self, **kwargs):
         assert kwargs.get('class_description', None) is not None
         self.class_description = kwargs.pop('class_description')
-        classes = kwargs.pop('classes')
-        # classes = getattr(kwargs, 'classes')
-        # delattr(kwargs, 'classes')
         super(OIDTDataset, self).__init__(**kwargs)
-        # 更新classes
-        OIDTDataset.CLASSES = classes
-        pass
 
     def split_label_bbox(self, line):
         words = line.split(' ')
@@ -135,12 +129,14 @@ class OIDTDatasetV2(CustomDataset):
     直接读取图片,标签为配置中指定的类,bbox为(left, top, right, bottom)
     """
 
-    CLASSES = ('Footwear',)
+    CLASSES = ('Human head',)
 
     def __init__(self, **kwargs):
         assert kwargs.get('class_description', None) is not None
         self.class_description = kwargs.pop('class_description')
         classes = kwargs.pop('classes')
+        # 要使用全部数据还是部分数据[0, 1]
+        self.persentage = kwargs.pop('persentage') if kwargs.get('persentage') is not None else 1
         # 更新classes
         self.CLASSES = classes
         # classes = getattr(kwargs, 'classes')
@@ -178,6 +174,7 @@ class OIDTDatasetV2(CustomDataset):
         obj_imgs = ann_csv[ann_csv['class'].isin(obj_classes)]
 
         filenames = [x for x in os.listdir(self.img_prefix) if x.endswith('jpg')]
+        filenames = filenames[0:int(len(filenames) * self.persentage)]
         img_ids = [x.split('.')[0] for x in filenames]
 
         print('folder {} path have {} number imgs'.format(self.img_prefix, len(obj_imgs)))
