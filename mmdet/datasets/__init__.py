@@ -11,6 +11,7 @@ from .xml_style import XMLDataset
 from .my_dataset import MyDataset
 from .oid_dataset import OIDTDataset, OIDTDatasetV2
 from .fire_dataset import FireDataset
+from .helmet_dataset import HelmetDataset
 
 __all__ = [
     'CustomDataset', 'XMLDataset', 'CocoDataset', 'VOCDataset',

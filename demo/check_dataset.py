@@ -68,10 +68,12 @@ def main():
     for type in ['val', 'test', 'train']:
         dataset = build_dataset(cfg.data[type])
         for i in range(5):
+
             d = dataset.img_infos[i]
             n = next(iter(dataset))
             # filename = n['img_meta'][0].data['filename']
-            ann = d['ann']
+            # ann = d['ann']
+            ann = dataset.get_ann_info(i)
             bboxes = ann['bboxes']
             labels = ann['labels']
             filename = dataset.img_prefix + d['filename']
