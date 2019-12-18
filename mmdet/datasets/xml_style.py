@@ -11,10 +11,11 @@ from .registry import DATASETS
 @DATASETS.register_module
 class XMLDataset(CustomDataset):
 
-    def __init__(self, min_size=None, **kwargs):
+    def __init__(self, min_size=None, use_ignore=False, **kwargs):
         super(XMLDataset, self).__init__(**kwargs)
         self.cat2label = {cat: i + 1 for i, cat in enumerate(self.CLASSES)}
         self.min_size = min_size
+        self.use_ignore = use_ignore
 
     def load_annotations(self, ann_file):
         img_infos = []
@@ -44,8 +45,13 @@ class XMLDataset(CustomDataset):
         labels_ignore = []
         for obj in root.findall('object'):
             name = obj.find('name').text
-            label = self.cat2label[name]
+            label = self.cat2label.get(name)
+            if label is None:
+                print('xml_path {} have label {} did not in CLASSES'.format(xml_path, name))
+                continue
+
             difficult = int(obj.find('difficult').text)
+
             bnd_box = obj.find('bndbox')
             bbox = [
                 int(bnd_box.find('xmin').text),
@@ -60,7 +66,7 @@ class XMLDataset(CustomDataset):
                 h = bbox[3] - bbox[1]
                 if w < self.min_size or h < self.min_size:
                     ignore = True
-            if difficult or ignore:
+            if self.use_ignore and (difficult or ignore):
                 bboxes_ignore.append(bbox)
                 labels_ignore.append(label)
             else:
