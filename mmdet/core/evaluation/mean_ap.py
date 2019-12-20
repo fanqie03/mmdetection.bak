@@ -372,7 +372,8 @@ def print_map_summary(mean_ap, results, dataset=None, ranges=None):
         if ranges is not None:
             print("Area range ", ranges[i])
         table_data = [header]
-        for j in range(num_classes):
+        row_length = min(num_classes, len(label_names))
+        for j in range(row_length):
             row_data = [
                 label_names[j], num_gts[i, j], results[j]['num_dets'],
                 '{:.3f}'.format(recalls[i, j]),
