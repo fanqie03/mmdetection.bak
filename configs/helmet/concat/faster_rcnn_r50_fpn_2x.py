@@ -141,44 +141,48 @@ data = dict(
     imgs_per_gpu=2,
     workers_per_gpu=4,
     train=[
-        dict(type=dataset_type_p2,
-        data_root=data_root_p2,
-        ann_file=data_root_p2 + 'ImageSets/Main/trainval.txt',
-        img_prefix=data_root_p2,
-        pipeline=train_pipeline,
-        use_ignore=True),
         dict(type=dataset_type,
         data_root=data_root,
         ann_file=data_root + 'ImageSets/Main/trainval.txt',
         img_prefix=data_root,
         pipeline=train_pipeline,
-        use_ignore=True)],
+        use_ignore=True),
+        dict(type=dataset_type_p2,
+         data_root=data_root_p2,
+         ann_file=data_root_p2 + 'ImageSets/Main/trainval.txt',
+         img_prefix=data_root_p2,
+         pipeline=train_pipeline,
+         use_ignore=True)],
     val=[
         dict(
-        type=dataset_type_p2,
-        data_root=data_root_p2,
-        ann_file=data_root_p2 + 'ImageSets/Main/test.txt',
-        img_prefix=data_root_p2,
-        pipeline=test_pipeline),
-        dict(
         type=dataset_type,
         data_root=data_root,
         ann_file=data_root + 'ImageSets/Main/test.txt',
         img_prefix=data_root,
-        pipeline=test_pipeline)],
+        pipeline=test_pipeline),
+
+        dict(
+            type=dataset_type_p2,
+            data_root=data_root_p2,
+            ann_file=data_root_p2 + 'ImageSets/Main/test.txt',
+            img_prefix=data_root_p2,
+            pipeline=test_pipeline),
+    ],
     test=[
         dict(
-        type=dataset_type_p2,
-        data_root=data_root_p2,
-        ann_file=data_root_p2 + 'ImageSets/Main/test.txt',
-        img_prefix=data_root_p2,
-        pipeline=test_pipeline),
-        dict(
         type=dataset_type,
         data_root=data_root,
         ann_file=data_root + 'ImageSets/Main/test.txt',
         img_prefix=data_root,
-        pipeline=test_pipeline)],)
+        pipeline=test_pipeline),
+
+        dict(
+            type=dataset_type_p2,
+            data_root=data_root_p2,
+            ann_file=data_root_p2 + 'ImageSets/Main/test.txt',
+            img_prefix=data_root_p2,
+            pipeline=test_pipeline),
+    ],)
 # optimizer
 optimizer = dict(type='SGD', lr=0.0025, momentum=0.9, weight_decay=0.0001)
 optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
