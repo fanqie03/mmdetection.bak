@@ -173,7 +173,8 @@ data = dict(
         data_root=data_root,
         ann_file=data_root + 'ImageSets/Main/test.txt',
         img_prefix=data_root,
-        pipeline=test_pipeline),)
+        pipeline=test_pipeline),
+)
 # optimizer
 optimizer = dict(type='SGD', lr=0.0025, momentum=0.9, weight_decay=0.0001)
 optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
@@ -197,7 +198,7 @@ log_config = dict(
 total_epochs = 24
 dist_params = dict(backend='nccl')
 log_level = 'INFO'
-work_dir = './work_dirs/helmet/concat/faster_rcnn_r50_fpn_2x'
+work_dir = './work_dirs/helmet/concat/faster_rcnn_r50_fpn_2x.py'
 load_from = None
 resume_from = None
 workflow = [('train', 1)]

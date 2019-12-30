@@ -128,46 +128,24 @@ test_pipeline = [
         ])
 ]
 # dataset settings
-dataset_type = 'HelmetDataset'
-data_root = '/home/cmf/share/VOC2028/'
-dataset_type_p2 = 'HelmetDatasetP2'
-data_root_p2 = '/home/cmf/share/GDUT-HWD/'
-dataset_type_p3 = 'HelmetDatasetP3'
-data_root_p3 = '/home/cmf/share/Hardhat/'
-data_root_p3_train = data_root_p3 + 'Train/'
-data_root_p3_test = data_root_p3 + 'Test/'
+dataset_type = 'HelmetMergeDataset'
+data_root = '/home/cmf/share/HelmetMerge/'
 
 data = dict(
     imgs_per_gpu=2,
     workers_per_gpu=4,
-    train=[
-        dict(type=dataset_type,
+    train=dict(type=dataset_type,
         data_root=data_root,
         ann_file=data_root + 'ImageSets/Main/trainval.txt',
         img_prefix=data_root,
         pipeline=train_pipeline,
         use_ignore=True),
-        dict(type=dataset_type_p2,
-         data_root=data_root_p2,
-         ann_file=data_root_p2 + 'ImageSets/Main/trainval.txt',
-         img_prefix=data_root_p2,
-         pipeline=train_pipeline,
-         use_ignore=True)],
-    val=[
-        dict(
+    val=dict(
         type=dataset_type,
         data_root=data_root,
         ann_file=data_root + 'ImageSets/Main/test.txt',
         img_prefix=data_root,
         pipeline=test_pipeline),
-
-        dict(
-            type=dataset_type_p2,
-            data_root=data_root_p2,
-            ann_file=data_root_p2 + 'ImageSets/Main/test.txt',
-            img_prefix=data_root_p2,
-            pipeline=test_pipeline),
-    ],
     test=dict(
         type=dataset_type,
         data_root=data_root,
@@ -197,7 +175,7 @@ log_config = dict(
 total_epochs = 24
 dist_params = dict(backend='nccl')
 log_level = 'INFO'
-work_dir = './work_dirs/helmet/concat/faster_rcnn_r50_fpn_2x'
+work_dir = './work_dirs/helmet/merge/faster_rcnn_r50_fpn_2x'
 load_from = None
 resume_from = None
 workflow = [('train', 1)]

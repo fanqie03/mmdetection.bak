@@ -1,112 +1,92 @@
 # model settings
 model = dict(
-    type='FasterRCNN',
-    pretrained='torchvision://resnet50',
+    type='RetinaNet',
+    pretrained='open-mmlab://resnet50_caffe',
     backbone=dict(
         type='ResNet',
         depth=50,
         num_stages=4,
         out_indices=(0, 1, 2, 3),
         frozen_stages=1,
-        style='pytorch'),
+        norm_cfg=dict(type='BN', requires_grad=False),
+        norm_eval=True,
+        style='caffe'),
     neck=dict(
         type='FPN',
         in_channels=[256, 512, 1024, 2048],
         out_channels=256,
+        start_level=1,
+        add_extra_convs=True,
         num_outs=5),
-    rpn_head=dict(
-        type='RPNHead',
-        in_channels=256,
-        feat_channels=256,
-        anchor_scales=[8],
-        anchor_ratios=[1.0],
-        anchor_strides=[4, 8, 16, 32, 64],
-        target_means=[.0, .0, .0, .0],
-        target_stds=[1.0, 1.0, 1.0, 1.0],
-        loss_cls=dict(
-            type='CrossEntropyLoss', use_sigmoid=True, loss_weight=1.0),
-        loss_bbox=dict(type='SmoothL1Loss', beta=1.0 / 9.0, loss_weight=1.0)),
-    bbox_roi_extractor=dict(
-        type='SingleRoIExtractor',
-        roi_layer=dict(type='RoIAlign', out_size=7, sample_num=2),  # sample_num采样点
-        out_channels=256,
-        featmap_strides=[4, 8, 16, 32]),
     bbox_head=dict(
-        type='SharedFCBBoxHead',
-        num_fcs=2,
-        in_channels=256,
-        fc_out_channels=1024,
-        roi_feat_size=7,
+        type='GARetinaHead',
         num_classes=3,
-        target_means=[0., 0., 0., 0.],
-        target_stds=[0.1, 0.1, 0.2, 0.2],
-        reg_class_agnostic=False,
+        in_channels=256,
+        stacked_convs=4,
+        feat_channels=256,
+        octave_base_scale=4,
+        scales_per_octave=3,
+        octave_ratios=[1.0],
+        anchor_strides=[8, 16, 32, 64, 128],
+        anchor_base_sizes=None,
+        anchoring_means=[.0, .0, .0, .0],
+        anchoring_stds=[1.0, 1.0, 1.0, 1.0],
+        target_means=(.0, .0, .0, .0),
+        target_stds=[1.0, 1.0, 1.0, 1.0],
+        loc_filter_thr=0.01,
+        loss_loc=dict(
+            type='FocalLoss',
+            use_sigmoid=True,
+            gamma=2.0,
+            alpha=0.25,
+            loss_weight=1.0),
+        loss_shape=dict(type='BoundedIoULoss', beta=0.2, loss_weight=1.0),
         loss_cls=dict(
-            type='CrossEntropyLoss', use_sigmoid=False, loss_weight=1.0),
-        loss_bbox=dict(type='SmoothL1Loss', beta=1.0, loss_weight=1.0)))
-# model training and testing settings
+            type='FocalLoss',
+            use_sigmoid=True,
+            gamma=2.0,
+            alpha=0.25,
+            loss_weight=1.0),
+        loss_bbox=dict(type='SmoothL1Loss', beta=0.04, loss_weight=1.0)))
+# training and testing settings
 train_cfg = dict(
-    rpn=dict(
-        assigner=dict(
-            type='MaxIoUAssigner',
-            pos_iou_thr=0.7,
-            neg_iou_thr=0.3,
-            min_pos_iou=0.3,
-            ignore_iof_thr=-1),
-        sampler=dict(
-            type='RandomSampler',
-            num=256,
-            pos_fraction=0.5,
-            neg_pos_ub=-1,
-            add_gt_as_proposals=False),
-        allowed_border=0,
-        pos_weight=-1,
-        debug=False),
-    rpn_proposal=dict(
-        nms_across_levels=False,
-        nms_pre=2000,
-        nms_post=2000,
-        max_num=2000,
-        nms_thr=0.7,
-        min_bbox_size=0),
-    rcnn=dict(
-        assigner=dict(
-            type='MaxIoUAssigner',
-            pos_iou_thr=0.5,
-            neg_iou_thr=0.5,
-            min_pos_iou=0.5,
-            ignore_iof_thr=-1),
-        sampler=dict(
-            type='RandomSampler',
-            num=512,
-            pos_fraction=0.25,
-            neg_pos_ub=-1,
-            add_gt_as_proposals=True),
-        pos_weight=-1,
-        debug=False))
+    ga_assigner=dict(
+        type='ApproxMaxIoUAssigner',
+        pos_iou_thr=0.5,
+        neg_iou_thr=0.4,
+        min_pos_iou=0.4,
+        ignore_iof_thr=-1),
+    ga_sampler=dict(
+        type='RandomSampler',
+        num=256,
+        pos_fraction=0.5,
+        neg_pos_ub=-1,
+        add_gt_as_proposals=False),
+    assigner=dict(
+        type='MaxIoUAssigner',
+        pos_iou_thr=0.5,
+        neg_iou_thr=0.5,
+        min_pos_iou=0.0,
+        ignore_iof_thr=-1),
+    allowed_border=-1,
+    pos_weight=-1,
+    center_ratio=0.2,
+    ignore_ratio=0.5,
+    debug=False)
 test_cfg = dict(
-    rpn=dict(
-        nms_across_levels=False,
-        nms_pre=1000,
-        nms_post=1000,
-        max_num=1000,
-        nms_thr=0.7,
-        min_bbox_size=0),
-    rcnn=dict(
-        score_thr=0.05, nms=dict(type='nms', iou_thr=0.3), max_per_img=100)  # iou_thr越小，越减少重叠
-    # soft-nms is also supported for rcnn testing
-    # e.g., nms=dict(type='soft_nms', iou_thr=0.5, min_score=0.05)
-)
+    nms_pre=1000,
+    min_bbox_size=0,
+    score_thr=0.05,
+    nms=dict(type='nms', iou_thr=0.5),
+    max_per_img=100)
 
-# classes = ['']
 img_norm_cfg = dict(
-    mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
+    mean=[102.9801, 115.9465, 122.7717], std=[1.0, 1.0, 1.0], to_rgb=False)
 train_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(type='LoadAnnotations', with_bbox=True),
     dict(type='Resize', img_scale=(1333, 800), keep_ratio=True),
     dict(type='RandomFlip', flip_ratio=0.5),
-    # dict(type='PhotoMetricDistortion',),
     dict(type='Normalize', **img_norm_cfg),
     dict(type='Pad', size_divisor=32),
     dict(type='DefaultFormatBundle'),
@@ -197,7 +177,7 @@ log_config = dict(
 total_epochs = 24
 dist_params = dict(backend='nccl')
 log_level = 'INFO'
-work_dir = './work_dirs/helmet/concat/faster_rcnn_r50_fpn_2x'
+work_dir = './work_dirs/helmet/concat/ga_retinanet_r50_caffe_fpn_2x'
 load_from = None
 resume_from = None
 workflow = [('train', 1)]

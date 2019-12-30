@@ -36,3 +36,16 @@ class HelmetDatasetP3(XMLDataset):
         super(HelmetDatasetP3, self).__init__(**kwargs)
         self.cat2label = {'helmet': 1, 'head': 2}  # 忽略person类别
         print(self.cat2label)
+
+
+@DATASETS.register_module
+class HelmetMergeDataset(XMLDataset):
+    """
+    https://pythonawesome.com/helmet-detection-on-construction-sites/
+    """
+    CLASSES = ('helmet', 'head')
+
+    def __init__(self, **kwargs):
+        super(HelmetMergeDataset, self).__init__(**kwargs)
+        self.cat2label = {'helmet': 1, 'head': 2}  # 忽略person类别
+        print(self.cat2label)

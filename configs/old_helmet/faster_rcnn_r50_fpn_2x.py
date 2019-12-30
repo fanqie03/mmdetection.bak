@@ -97,7 +97,9 @@ test_cfg = dict(
     # soft-nms is also supported for rcnn testing
     # e.g., nms=dict(type='soft_nms', iou_thr=0.5, min_score=0.05)
 )
-
+# dataset settings
+dataset_type = 'HelmetDataset'
+data_root = '/home/cmf/share/VOC2028/'
 # classes = ['']
 img_norm_cfg = dict(
     mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
@@ -127,53 +129,28 @@ test_pipeline = [
             dict(type='Collect', keys=['img']),
         ])
 ]
-# dataset settings
-dataset_type = 'HelmetDataset'
-data_root = '/home/cmf/share/VOC2028/'
-dataset_type_p2 = 'HelmetDatasetP2'
-data_root_p2 = '/home/cmf/share/GDUT-HWD/'
-dataset_type_p3 = 'HelmetDatasetP3'
-data_root_p3 = '/home/cmf/share/Hardhat/'
-data_root_p3_train = data_root_p3 + 'Train/'
-data_root_p3_test = data_root_p3 + 'Test/'
 
 data = dict(
     imgs_per_gpu=2,
     workers_per_gpu=4,
-    train=[
-        dict(type=dataset_type,
+    train=dict(
+        type=dataset_type,
         data_root=data_root,
         ann_file=data_root + 'ImageSets/Main/trainval.txt',
-        img_prefix=data_root,
-        pipeline=train_pipeline,
-        use_ignore=True),
-        dict(type=dataset_type_p2,
-         data_root=data_root_p2,
-         ann_file=data_root_p2 + 'ImageSets/Main/trainval.txt',
-         img_prefix=data_root_p2,
-         pipeline=train_pipeline,
-         use_ignore=True)],
-    val=[
-        dict(
+        img_prefix=data_root ,
+        pipeline=train_pipeline),
+    val=dict(
         type=dataset_type,
         data_root=data_root,
         ann_file=data_root + 'ImageSets/Main/test.txt',
-        img_prefix=data_root,
+        img_prefix=data_root ,
         pipeline=test_pipeline),
-
-        dict(
-            type=dataset_type_p2,
-            data_root=data_root_p2,
-            ann_file=data_root_p2 + 'ImageSets/Main/test.txt',
-            img_prefix=data_root_p2,
-            pipeline=test_pipeline),
-    ],
     test=dict(
         type=dataset_type,
         data_root=data_root,
-        ann_file=data_root + 'ImageSets/Main/test.txt',
-        img_prefix=data_root,
-        pipeline=test_pipeline),)
+        ann_file=data_root +'ImageSets/Main/test.txt',
+        img_prefix=data_root ,
+        pipeline=test_pipeline))
 # optimizer
 optimizer = dict(type='SGD', lr=0.0025, momentum=0.9, weight_decay=0.0001)
 optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
@@ -197,7 +174,7 @@ log_config = dict(
 total_epochs = 24
 dist_params = dict(backend='nccl')
 log_level = 'INFO'
-work_dir = './work_dirs/helmet/concat/faster_rcnn_r50_fpn_2x'
+work_dir = './work_dirs/helmet/faster_rcnn_r50_fpn_2x.py'
 load_from = None
 resume_from = None
 workflow = [('train', 1)]
