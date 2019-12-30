@@ -1,0 +1,1 @@
+`num_class=3` - background, hat, person
