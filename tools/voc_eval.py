@@ -38,6 +38,8 @@ def main():
         default=4,
         help='Processes to be used for computing mAP')
     args = parser.parse_args()
+    print(args)
+    print('iou-thr: {}'.format(args.iou_thr))
     cfg = mmcv.Config.fromfile(args.config)
     test_dataset = mmcv.runner.obj_from_dict(cfg.data.test, datasets)
     voc_eval(args.result, test_dataset, args.iou_thr, args.nproc)
