@@ -14,9 +14,9 @@ def get_args():
     parser.add_argument('--config', default='configs/oid/faster_rcnn_r50_fpn_2x_Human_head_v2.py')
     parser.add_argument('--checkpoint', default='work_dirs/faster_rcnn_r50_fpn_1x_Human_head_v2/latest.pth')
     parser.add_argument('--interval', type=float, default=0.03)
-    parser.add_argument('--out_dir', default='data/extract_video')
-    parser.add_argument('--video_dir', default='/home/cmf/datasets/helmet_gy/video')
-    parser.add_argument('--score_thr', type=float, default=0.5)
+    parser.add_argument('--out_dir', default='data/extract_video_tayg_0.97')
+    parser.add_argument('--video_dir', default='/home/cmf/datasets/tayg')
+    parser.add_argument('--score_thr', type=float, default=0.97)
     parser.add_argument('--min_size', type=int, default=30, help='小目标最小size')
     parser.add_argument('--expand_ratio', type=float, default=0.2, help='扩大倍数')
     parser.add_argument('--target_classes', default=[0], help='需要裁剪的类别')
@@ -39,7 +39,7 @@ def main():
             count = cap.get(cv2.CAP_PROP_FRAME_COUNT)
             print('video frame count is {}'.format(count))
             start = time()
-            for _ in range(count):
+            for _ in range(int(count)):
             # while tqdm(True):
                 _, img = cap.read()
                 # img = np.rot90(img, k=0)
