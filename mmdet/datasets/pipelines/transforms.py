@@ -12,6 +12,19 @@ from ..registry import PIPELINES
 
 
 @PIPELINES.register_module
+class LetterBox:
+    '''resize image with unchanged aspect ratio using padding'''
+    def __init__(self, inp_dim):
+        self.w, self.h = inp_dim
+
+    def _pad_img(self, result):
+        pass
+
+    def __call__(self, result):
+        pass
+
+
+@PIPELINES.register_module
 class Resize(object):
     """Resize images & bbox & mask.
 
@@ -262,16 +275,25 @@ class Pad(object):
     Args:
         size (tuple, optional): Fixed padding size.
         size_divisor (int, optional): The divisor of padded size.
+        square (bool, optional): padding image to square
         pad_val (float, optional): Padding value, 0 by default.
     """
 
-    def __init__(self, size=None, size_divisor=None, pad_val=0):
+    def __init__(self, size=None, size_divisor=None, square=False, pad_val=0):
         self.size = size
         self.size_divisor = size_divisor
         self.pad_val = pad_val
+        self.square = square
         # only one of size and size_divisor should be valid
-        assert size is not None or size_divisor is not None
+        assert size is not None or size_divisor is not None or square is not None
         assert size is None or size_divisor is None
+
+    def _calc_square_pad(self, img):
+        h, w, d = img.shape
+        if h < w:
+            return (w, w, d)
+        else:
+            return (h, h, d)
 
     def _pad_img(self, results):
         if self.size is not None:
@@ -279,10 +301,14 @@ class Pad(object):
         elif self.size_divisor is not None:
             padded_img = mmcv.impad_to_multiple(
                 results['img'], self.size_divisor, pad_val=self.pad_val)
+        elif self.square not in [False, None]:
+            padded_size = self._calc_square_pad(results['img'])
+            padded_img = mmcv.impad(results['img'], padded_size, pad_val=self.pad_val)
         results['img'] = padded_img
         results['pad_shape'] = padded_img.shape
         results['pad_fixed_size'] = self.size
         results['pad_size_divisor'] = self.size_divisor
+        results['pad_square'] = self.square
 
     def _pad_masks(self, results):
         pad_shape = results['pad_shape'][:2]
