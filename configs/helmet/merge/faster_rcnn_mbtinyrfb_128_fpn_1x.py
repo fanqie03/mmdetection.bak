@@ -127,7 +127,7 @@ dataset_type = 'HelmetMergeDataset'
 data_root = '/home/cmf/share/HelmetMerge/'
 
 data = dict(
-    imgs_per_gpu=4,
+    imgs_per_gpu=8,
     workers_per_gpu=4,
     train=dict(type=dataset_type,
         data_root=data_root,
@@ -148,7 +148,7 @@ data = dict(
         img_prefix=data_root,
         pipeline=test_pipeline),)
 # optimizer
-optimizer = dict(type='SGD', lr=0.005, momentum=0.9, weight_decay=0.0001)
+optimizer = dict(type='SGD', lr=0.01, momentum=0.9, weight_decay=0.0001)
 optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
 # learning policy
 lr_config = dict(
