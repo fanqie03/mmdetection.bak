@@ -12,7 +12,7 @@ from mmcv.parallel import MMDataParallel, MMDistributedDataParallel
 from mmcv.runner import get_dist_info, load_checkpoint
 import cv2
 
-from mmdet.apis import init_dist
+
 from mmdet.core import coco_eval, results2json, wrap_fp16_model
 from mmdet.datasets import build_dataloader, build_dataset
 from mmdet.models import build_detector
@@ -131,10 +131,12 @@ def main():
             for info, ann in get_class_info(dataset, args.clazz):
                 draw_img(dataset.img_prefix, info, ann, args)
         else:
-            for i in range(len(dataset)):
-                info = dataset.img_infos[i]
-                ann = dataset.get_ann_info(i)
-                draw_img(dataset.img_prefix, info, ann, args)
+            for result in dataset:
+                print(result)
+            # for i in range(len(dataset)):
+            #     info = dataset.img_infos[i]
+            #     ann = dataset.get_ann_info(i)
+            #     draw_img(dataset.img_prefix, info, ann, args)
 
 
 if __name__ == '__main__':
