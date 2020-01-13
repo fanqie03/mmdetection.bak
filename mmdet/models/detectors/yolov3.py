@@ -12,6 +12,21 @@ from ..detectors import SingleStageDetector
 import cv2
 
 
+def draw_func(x, results, color):
+    c1 = tuple(x[1:3].int())
+    c2 = tuple(x[3:5].int())
+    img = results[int(x[0])]
+    cls = int(x[-1])
+    label = "{0}".format(cls)
+    # label = "{0}".format(classes[cls])
+    cv2.rectangle(img, c1, c2, color, 1)
+    t_size = cv2.getTextSize(label, cv2.FONT_HERSHEY_PLAIN, 1, 1)[0]
+    c2 = c1[0] + t_size[0] + 3, c1[1] + t_size[1] + 4
+    cv2.rectangle(img, c1, c2, color, -1)
+    cv2.putText(img, label, (c1[0], c1[1] + t_size[1] + 4), cv2.FONT_HERSHEY_PLAIN, 1, [225, 255, 255], 1)
+    return img
+
+
 def bbox_iou(box1, box2):
     # Get the coordinates of bounding boxes
     b1_x1, b1_y1, b1_x2, b1_y2 = box1[:, 0], box1[:, 1], box1[:, 2], box1[:, 3]
@@ -239,6 +254,7 @@ class Darknet(nn.Module):
         super(Darknet, self).__init__()
         self.blocks = parse_cfg(cfgfile)
         self.net_info, self.module_list = create_modules(self.blocks)
+        self.inp_dim = int(self.net_info['height'])
 
     def forward(self, x):
         CUDA = x.is_cuda
@@ -394,6 +410,47 @@ class Darknet(nn.Module):
             except:
                 return 0
 
+    def draw_result(self, img, output):
+        im_dim_list = [(img.shape[1], img.shape[0])]
+        im_dim_list = torch.FloatTensor(im_dim_list).repeat(1, 2)
+
+        if next(self.parameters()).is_cuda:
+            im_dim_list = im_dim_list.cuda()
+
+        im_dim_list = torch.index_select(im_dim_list, 0, output[:, 0].long())
+
+        scaling_factor = torch.min(self.inp_dim / im_dim_list, 1)[0].view(-1, 1)
+
+        output[:, [1, 3]] -= (self.inp_dim - scaling_factor * im_dim_list[:, 0].view(-1, 1)) / 2
+        output[:, [2, 4]] -= (self.inp_dim - scaling_factor * im_dim_list[:, 1].view(-1, 1)) / 2
+
+        # 现在，我们的坐标符合填充区域上图像的尺寸。
+        # 但是，在letterbox_image函数中，我们已经通过缩放因子调整了图像的两个尺寸（请记住，两个尺寸都用一个公共因子进行划分以保持纵横比）。
+        # 现在，我们撤消此重新缩放，以获取原始图像上边界框的坐标。
+        output[:, 1:5] /= scaling_factor
+
+        for i in range(output.shape[0]):
+            output[i, [1, 3]] = torch.clamp(output[i, [1, 3]], 0.0, im_dim_list[i, 0])
+            output[i, [2, 4]] = torch.clamp(output[i, [2, 4]], 0.0, im_dim_list[i, 1])
+
+        list(map(lambda x: draw_func(x, [img], (255, 0, 0)), output))
+        det_name = "{}/det_{}".format('data/det', 'result.png')
+        cv2.imwrite(det_name, img)
+
+    def letterbox_image(self, img):
+        '''resize image with unchanged aspect ratio using padding'''
+        img_w, img_h = img.shape[1], img.shape[0]
+        w, h = self.inp_dim
+        new_w = int(img_w * min(w / img_w, h / img_h))
+        new_h = int(img_h * min(w / img_w, h / img_h))
+        resized_image = cv2.resize(img, (new_w, new_h), interpolation=cv2.INTER_CUBIC)
+
+        canvas = np.full((self.inp_dim[1], self.inp_dim[0], 3), 128)
+
+        canvas[(h - new_h) // 2:(h - new_h) // 2 + new_h, (w - new_w) // 2:(w - new_w) // 2 + new_w, :] = resized_image
+
+        return canvas
+
     def load_weights(self, weightfile):
         # 权重文件的前160个字节存储5个int32值，这些值构成文件的头。
         with open(weightfile, 'rb') as fp:
@@ -469,5 +526,3 @@ class Darknet(nn.Module):
 
                 conv_weights = conv_weights.view_as(conv.weight.data)
                 conv.weight.data.copy_(conv_weights)
-
-
