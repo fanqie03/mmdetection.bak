@@ -249,8 +249,9 @@ def create_modules(blocks):
     return (net_info, module_list)
 
 
+@DETECTORS.register_module
 class Darknet(nn.Module):
-    def __init__(self, cfgfile):
+    def __init__(self, cfgfile, **kwargs):
         super(Darknet, self).__init__()
         self.blocks = parse_cfg(cfgfile)
         self.net_info, self.module_list = create_modules(self.blocks)
