@@ -123,7 +123,8 @@ def main():
 
     # build the dataloader
 
-    for type in ['val', 'train']:
+    for type in ['val']:
+    # for type in ['val', 'train']:
         dataset = build_dataset(cfg.data[type])
         print(len(dataset))
 
@@ -133,6 +134,9 @@ def main():
         else:
             for result in dataset:
                 print(result)
+                img = result['img'][0]
+                cv2.imshow('', img)
+                cv2.waitKey()
             # for i in range(len(dataset)):
             #     info = dataset.img_infos[i]
             #     ann = dataset.get_ann_info(i)

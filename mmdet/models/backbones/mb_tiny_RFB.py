@@ -83,23 +83,35 @@ class BasicRFB(nn.Module):
         return out
 
 
+def SeperableConv2d(in_channels, out_channels, kernel_size=1, stride=1, padding=0):
+    """Replace Conv2d with a depthwise Conv2d and Pointwise Conv2d.
+    """
+    return nn.Sequential(
+        nn.Conv2d(in_channels=in_channels, out_channels=in_channels, kernel_size=kernel_size,
+                  groups=in_channels, stride=stride, padding=padding),
+        nn.ReLU(),
+        nn.Conv2d(in_channels=in_channels, out_channels=out_channels, kernel_size=1),
+    )
+
+
 @BACKBONES.register_module
 class Mb_Tiny_RFB(nn.Module):
     """
     (640, 480)
-    0 torch.Size([1, 16, 320, 240])
+    0 torch.Size([1, 16, 320, 240])  # /2
     1 torch.Size([1, 32, 320, 240])
-    2 torch.Size([1, 32, 160, 120])
+    2 torch.Size([1, 32, 160, 120])  # /4
     3 torch.Size([1, 32, 160, 120])
-    4 torch.Size([1, 64, 80, 60])
+    4 torch.Size([1, 64, 80, 60])  # /8
     5 torch.Size([1, 64, 80, 60])
     6 torch.Size([1, 64, 80, 60])
     7 torch.Size([1, 64, 80, 60])
-    8 torch.Size([1, 128, 40, 30])
+    8 torch.Size([1, 128, 40, 30])  # /16
     9 torch.Size([1, 128, 40, 30])
-    10 torch.Size([1, 128, 40, 30])
+    10 torch.Size([1, 128, 40, 30])  # /16
     11 torch.Size([1, 256, 20, 15])
-    12 torch.Size([1, 256, 20, 15])
+    12 torch.Size([1, 256, 20, 15])  # /32
+    13 torch.Size([1, 256, 10, 8])  # /64
     """
 
     def __init__(self, out_indices=(3, 7, 10, 12)):
@@ -125,6 +137,15 @@ class Mb_Tiny_RFB(nn.Module):
                 nn.ReLU(inplace=True),
             )
 
+        def extras(base_channel):
+            return nn.Sequential(
+                nn.Conv2d(in_channels=base_channel * 16, out_channels=base_channel * 4, kernel_size=1),
+                nn.ReLU(),
+                SeperableConv2d(in_channels=base_channel * 4, out_channels=base_channel * 16,
+                                kernel_size=3, stride=2, padding=1),
+                nn.ReLU()
+            )
+
         self.features = nn.Sequential(
             conv_bn(3, self.base_channel, 2),  # 160*120
             conv_dw(self.base_channel, self.base_channel * 2, 1),
@@ -138,7 +159,8 @@ class Mb_Tiny_RFB(nn.Module):
             conv_dw(self.base_channel * 8, self.base_channel * 8, 1),
             conv_dw(self.base_channel * 8, self.base_channel * 8, 1),
             conv_dw(self.base_channel * 8, self.base_channel * 16, 2),  # 10*8
-            conv_dw(self.base_channel * 16, self.base_channel * 16, 1)
+            conv_dw(self.base_channel * 16, self.base_channel * 16, 1),
+            extras(self.base_channel)
         )
 
     def forward(self, x):
@@ -169,7 +191,7 @@ if __name__ == '__main__':
     input_sizes = [(640, 480), (320, 240), (160, 120), (80, 60), (224, 224), (112, 112)]
     for input_size in input_sizes:
         data = torch.empty(1, 3, *input_size)
-        model = Mb_Tiny_RFB(3)
+        model = Mb_Tiny_RFB(3, list(range(18)))
         r = model(data)
         print(r.shape)
         # flops, params = get_model_complexity_info(model, (3,) + input_size, print_per_layer_stat=True, as_strings=True)
