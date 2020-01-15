@@ -125,7 +125,7 @@ test_pipeline = [
 ]
 # dataset settings
 dataset_type = 'HelmetMergeDataset'
-data_root = '/home/cmf/share/HelmetMerge/'
+data_root = '/datasets/HelmetMerge/'
 
 data = dict(
     imgs_per_gpu=4,

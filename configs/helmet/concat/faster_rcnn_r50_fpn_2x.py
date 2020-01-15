@@ -129,11 +129,11 @@ test_pipeline = [
 ]
 # dataset settings
 dataset_type = 'HelmetDataset'
-data_root = '/home/cmf/share/VOC2028/'
+data_root = '/datasets/VOC2028/'
 dataset_type_p2 = 'HelmetDatasetP2'
-data_root_p2 = '/home/cmf/share/GDUT-HWD/'
+data_root_p2 = '/datasets/GDUT-HWD/'
 dataset_type_p3 = 'HelmetDatasetP3'
-data_root_p3 = '/home/cmf/share/Hardhat/'
+data_root_p3 = '/datasets/Hardhat/'
 data_root_p3_train = data_root_p3 + 'Train/'
 data_root_p3_test = data_root_p3 + 'Test/'
 
