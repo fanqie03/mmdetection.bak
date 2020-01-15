@@ -1,5 +1,6 @@
 import torch
 from mmdet.datasets.pipelines.transforms import Pad
+from mmdet.datasets.pipelines.transforms import FilterBox
 import numpy as np
 import cv2
 
@@ -28,5 +29,18 @@ def test_pad():
     cv2.waitKey()
 
 
+def test_filter_box():
+    bboxes = np.array([[0, 0, 10, 10],
+                       [10, 10, 20, 20],
+                       [10, 10, 19, 20],
+                       [10, 10, 20, 19],
+                       [10, 10, 19, 19]])
+    gt_bboxes = np.array([[0, 0, 10, 9]])
+    result = dict(gt_bboxes=bboxes)
+    fb = FilterBox((10, 10))
+    fb(result)
+
+
 if __name__ == '__main__':
-    test_pad()
+    # test_pad()
+    test_filter_box()

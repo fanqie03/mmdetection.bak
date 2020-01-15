@@ -6,9 +6,79 @@ import numpy as np
 from albumentations import Compose
 from imagecorruptions import corrupt
 from numpy import random
+import torch
+import cv2
+import time
+import os
 
 from mmdet.core.evaluation.bbox_overlaps import bbox_overlaps
 from ..registry import PIPELINES
+
+
+@PIPELINES.register_module
+class FilterBox:
+    """过滤一些较小的box size"""
+    def __init__(self, filter_size=10, show=False):
+        if type(filter_size) not in (tuple, list, np.array):
+            self.filter_size = np.array((filter_size, filter_size))
+        else:
+            self.filter_size = np.array(filter_size)
+        # self.filter_size = torch.from_numpy(self.filter_size)
+        self.show = show
+
+    def __call__(self, result):
+        gt_bboxes = result.get('gt_bboxes')
+        gt_labels = result.get('gt_labels')
+        if gt_bboxes is None:
+            return result
+
+        wh = gt_bboxes[:, 2:] - gt_bboxes[:, 0:2]
+
+        pass_idx = (wh >= self.filter_size).all(1)
+        fail_idx = (wh < self.filter_size).any(1)
+
+        fail_num = fail_idx.sum()
+
+        if self.show and fail_num > 0:
+            mmcv.imshow_det_bboxes(
+                result['img'],
+                gt_bboxes,
+                gt_labels,
+                bbox_color='blue',
+                text_color='blue',
+                win_name='raw',
+                wait_time=1,
+                show=False)
+
+            mmcv.imshow_det_bboxes(
+                result['img'],
+                gt_bboxes[fail_idx],
+                gt_labels[fail_idx],
+                bbox_color='red',
+                text_color='red',
+                win_name='fail',
+                wait_time=1,
+            show=False)
+            mmcv.imshow_det_bboxes(
+                result['img'],
+                gt_bboxes[pass_idx],
+                gt_labels[pass_idx],
+                bbox_color='green',
+                text_color='green',
+                win_name='pass',
+            wait_time=1,
+            show=False)
+            filename = os.path.basename(result['filename'])
+            mmcv.imwrite(result['img'], f'/tmp/picture/{filename}')
+
+            print(f'pass bboxes num is {fail_num}')
+        result['gt_bboxes'] = gt_bboxes[pass_idx]
+
+        if gt_labels is not None:
+            result['gt_labels'] = gt_labels[pass_idx]
+
+        return result
+
 
 
 @PIPELINES.register_module

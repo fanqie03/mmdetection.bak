@@ -7,7 +7,7 @@ def test_mb_tiny_rfb():
     for input_size in input_sizes:
         print(input_size)
         data = torch.empty(1, 3, *input_size)
-        model = Mb_Tiny_RFB()
+        model = Mb_Tiny_RFB(list(range(18)))
         r = model(data)
         for i, f in enumerate(r):
             print(i, f.shape)
