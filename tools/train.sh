@@ -6,11 +6,17 @@
 
 #for base_path in helmet/merge/faster_rcnn_r50_fpn_2x helmet/merge/ga_retinanet_r50_caffe_fpn_2x helmet/merge/retinanet_r50_fpn_2x
 #for base_path in helmet/merge/retinanet_r50_fpn_2x helmet/merge/ga_retinanet_r50_caffe_fpn_2x
-for base_path in helmet/merge/faster_rcnn_mobilenetv2_32_fpn_2x helmet/merge/faster_rcnn_mobilenetv2_64_fpn_2x helmet/merge/faster_rcnn_mobilenetv2_128_fpn_2x
-do
+#for base_path in helmet/merge/faster_rcnn_mobilenetv2_32_fpn_2x helmet/merge/faster_rcnn_mobilenetv2_64_fpn_2x helmet/merge/faster_rcnn_mobilenetv2_128_fpn_2x
+# for base_path in helmet/merge/retinanet_mobilenetv2_128_fpn_1x helmet/merge/retinanet_mobilenetv2_128_fpn_1x
+# do
 #base_path=old_helmet/concat/retinanet_r50_fpn_2x
 #base_path=old_helmet/concat/faster_rcnn_r50_fpn_2x
 #old_helmet/concat/faster_rcnn_r50_fpn_2x
+# configs/mask v2/faster_rcnn_mbtinyrfb_128_fpn_1x.py
+for base_path in "$@"
+
+do
+echo ${base_path}
 config_file=configs/${base_path}.py
 work_path=work_dirs/${base_path}
 ckpt_file=${work_path}/latest.pth
@@ -34,7 +40,7 @@ ${ckpt_file} \
 --out ${test_output_file}
 
 # eval
-for i in 0.5 0.6 0.7 0.8 0.9
+for i in 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9
 do
   python tools/voc_eval.py ${test_output_file} \
   ${config_file} --iou-thr ${i} | tee -a ${map_file}
