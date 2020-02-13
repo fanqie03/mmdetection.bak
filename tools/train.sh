@@ -14,10 +14,9 @@
 #old_helmet/concat/faster_rcnn_r50_fpn_2x
 
 for base_path in "$@"
-
+do
 echo ${base_path}
 
-do
 config_file=configs/${base_path}.py
 work_path=work_dirs/${base_path}
 ckpt_file=${work_path}/latest.pth
