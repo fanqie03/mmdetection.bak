@@ -4,6 +4,7 @@ import os
 
 import cv2
 import torch
+import numpy as np
 
 from mmdet.apis import inference_detector, init_detector, show_result
 import mmcv
@@ -30,6 +31,9 @@ def parse_args():
     parser.add_argument(
         '--show', type=int, default=1, help='show detection result or not'
     )
+    parser.add_argument(
+        '--rot', type=int, default=0, help='if video from phone, recommend set 1'
+    )
 
     args = parser.parse_args()
     return args
@@ -44,8 +48,11 @@ def main():
     camera = cv2.VideoCapture(args.camera_id)
 
     if args.out_video:
-        frame_width = int(camera.get(cv2.CAP_PROP_FRAME_WIDTH))
-        frame_height = int(camera.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        _, img = camera.read()
+        img = np.rot90(img, args.rot)
+        frame_height, frame_width, _ = img.shape
+        # frame_width = int(camera.get(cv2.CAP_PROP_FRAME_WIDTH))
+        # frame_height = int(camera.get(cv2.CAP_PROP_FRAME_HEIGHT))
         out = cv2.VideoWriter(args.out_video, cv2.VideoWriter_fourcc('M','J','P','G'), 25, (frame_width, frame_height))
         args.show=False
         args.out_dir=None
@@ -59,6 +66,7 @@ def main():
         ret_val, img = camera.read()
         if ret_val == False or img is None:
             break
+        img = np.rot90(img, args.rot)
 
         result = inference_detector(model, img)
 
