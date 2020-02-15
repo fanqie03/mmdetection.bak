@@ -22,10 +22,15 @@ work_path=work_dirs/${base_path}
 ckpt_file=${work_path}/latest.pth
 test_output_file=${work_path}/test.pkl
 map_file=${work_path}/map.txt
+flops_file=${work_path}/model_flops.txt
 
 
+## get_flops
+python tools/get_flops.py ${config_file} | tee ${flops_file}
 ## train
 python tools/train.py ${config_file}
+## publish
+python tools/publish_model.py ${ckpt_file} ${ckpt_file}
 #
 ## plot
 python tools/analyze_logs.py plot_curve \
