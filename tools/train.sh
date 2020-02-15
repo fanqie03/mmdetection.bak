@@ -13,10 +13,15 @@
 #base_path=old_helmet/concat/faster_rcnn_r50_fpn_2x
 #old_helmet/concat/faster_rcnn_r50_fpn_2x
 
-for base_path in "$@"
+for config_file in "$@"
 do
+echo ${config_file}
+base_path=`echo ${config_file%.*}`
+base_path=`echo ${base_path#*/}`
 echo ${base_path}
-
+#work_path=`echo ${config_file/configs/work_dirs}`
+#work_path=`echo ${work_path%.*}`
+#echo ${work_path}
 config_file=configs/${base_path}.py
 work_path=work_dirs/${base_path}
 ckpt_file=${work_path}/latest.pth
@@ -24,7 +29,7 @@ test_output_file=${work_path}/test.pkl
 map_file=${work_path}/map.txt
 flops_file=${work_path}/model_flops.txt
 
-
+mkdir -p ${work_path}
 ## get_flops
 python tools/get_flops.py ${config_file} | tee ${flops_file}
 ## train
