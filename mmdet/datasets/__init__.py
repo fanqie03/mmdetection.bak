@@ -13,10 +13,11 @@ from .oid_dataset import OIDTDataset, OIDTDatasetV2
 from .fire_dataset import FireDataset
 from .helmet_dataset import HelmetDataset,HelmetDatasetP3,HelmetDatasetP2,HelmetMergeDataset
 from .folder_dataset import FolderDataset
+from.MAFADataset import MAFADataset,MAFADatasetV2
 
 __all__ = [
     'CustomDataset', 'XMLDataset', 'CocoDataset', 'VOCDataset',
     'CityscapesDataset', 'GroupSampler', 'DistributedGroupSampler',
     'build_dataloader', 'ConcatDataset', 'RepeatDataset', 'WIDERFaceDataset',
-    'DATASETS', 'build_dataset', 'FolderDataset'
+    'DATASETS', 'build_dataset', 'FolderDataset', 'MAFADataset', 'MAFADatasetV2'
 ]

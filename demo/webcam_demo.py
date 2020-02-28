@@ -1,10 +1,13 @@
 import argparse
 import time
+import os
 
 import cv2
 import torch
+import numpy as np
 
 from mmdet.apis import inference_detector, init_detector, show_result
+import mmcv
 
 
 def parse_args():
@@ -16,6 +19,22 @@ def parse_args():
         '--camera-id', default=0, help='camera device id')
     parser.add_argument(
         '--score-thr', type=float, default=0.5, help='bbox score threshold')
+    parser.add_argument(
+        '--out-dir', type=str, default=None, help='detection result output directory'
+    )
+    parser.add_argument(
+        '--out-video', type=str, default=None, help='detection result video output file'
+    )
+    parser.add_argument(
+        '--out-file', type=str, default=None
+    )
+    parser.add_argument(
+        '--show', type=int, default=1, help='show detection result or not'
+    )
+    parser.add_argument(
+        '--rot', type=int, default=0, help='if video from phone, recommend set 1'
+    )
+
     args = parser.parse_args()
     return args
 
@@ -28,6 +47,16 @@ def main():
 
     camera = cv2.VideoCapture(args.camera_id)
 
+    if args.out_video:
+        _, img = camera.read()
+        img = np.rot90(img, args.rot)
+        frame_height, frame_width, _ = img.shape
+        # frame_width = int(camera.get(cv2.CAP_PROP_FRAME_WIDTH))
+        # frame_height = int(camera.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        out = cv2.VideoWriter(args.out_video, cv2.VideoWriter_fourcc('M','J','P','G'), 25, (frame_width, frame_height))
+        args.show=False
+        args.out_dir=None
+
     frame_rate = 0
     start_time = time.time()
     frame_count = 0
@@ -35,6 +64,10 @@ def main():
     print('Press "Esc", "q" or "Q" to exit.')
     while True:
         ret_val, img = camera.read()
+        if ret_val == False or img is None:
+            break
+        img = np.rot90(img, args.rot)
+
         result = inference_detector(model, img)
 
         ch = cv2.waitKey(1)
@@ -53,8 +86,18 @@ def main():
 
         frame_count += 1
 
-        show_result(
-            img, result, model.CLASSES, score_thr=args.score_thr, wait_time=1)
+        if args.out_dir:
+            args.out_file = os.path.join(args.out_dir, '{}.jpg'.format(time.time()))
+
+        img = show_result(
+            img, result, model.CLASSES, score_thr=args.score_thr, wait_time=1, show=args.show,
+            out_file=args.out_file)
+
+        if args.out_video:
+            out.write(img)
+
+    if args.out_video:
+        out.release()
 
 
 if __name__ == '__main__':
