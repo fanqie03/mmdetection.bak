@@ -218,23 +218,6 @@ def _non_dist_train(model,
     runner.register_training_hooks(cfg.lr_config, optimizer_config,
                                    cfg.checkpoint_config, cfg.log_config)
 
-    # register eval hooks
-    if validate:
-        val_dataset_cfg = cfg.data.val
-        eval_cfg = cfg.get('evaluation', {})
-        if isinstance(model.module, RPN):
-            # TODO: implement recall hooks for other datasets
-            runner.register_hook(
-                CocoDistEvalRecallHook(val_dataset_cfg, **eval_cfg))
-        else:
-            dataset_type = DATASETS.get(val_dataset_cfg.type)
-            if issubclass(dataset_type, datasets.CocoDataset):
-                runner.register_hook(
-                    CocoDistEvalmAPHook(val_dataset_cfg, **eval_cfg))
-            else:
-                runner.register_hook(
-                    DistEvalmAPHook(val_dataset_cfg, **eval_cfg))
-
     if cfg.resume_from:
         runner.resume(cfg.resume_from)
     elif cfg.load_from:
