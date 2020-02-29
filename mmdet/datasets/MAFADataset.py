@@ -17,3 +17,18 @@ class MAFADatasetV2(XMLDataset):
 
     def __init__(self, **kwargs):
         super(MAFADatasetV2, self).__init__(**kwargs)
+
+
+@DATASETS.register_module
+class MAFADatasetV3(XMLDataset):
+
+    CLASSES = ('mask', 'face')
+
+    def __init__(self, **kwargs):
+        super(MAFADatasetV3, self).__init__(**kwargs)
+
+
+@DATASETS.register_module
+class MAFADatasetV4(XMLDataset):
+
+    CLASSES = ('face_mask', 'face')
