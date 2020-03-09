@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 import os
 import subprocess
 import time
@@ -93,7 +92,7 @@ def make_cuda_ext(name, module, sources):
     define_macros = []
 
     if torch.cuda.is_available() or os.getenv('FORCE_CUDA', '0') == '1':
-        define_macros += [("WITH_CUDA", None)]
+        define_macros += [('WITH_CUDA', None)]
     else:
         raise EnvironmentError('CUDA is required to compile MMDetection!')
 
@@ -269,6 +268,17 @@ if __name__ == '__main__':
                 module='mmdet.ops.masked_conv',
                 sources=[
                     'src/masked_conv2d_cuda.cpp', 'src/masked_conv2d_kernel.cu'
+                ]),
+            make_cuda_ext(
+                name='affine_grid_cuda',
+                module='mmdet.ops.affine_grid',
+                sources=['src/affine_grid_cuda.cpp']),
+            make_cuda_ext(
+                name='grid_sampler_cuda',
+                module='mmdet.ops.grid_sampler',
+                sources=[
+                    'src/cpu/grid_sampler_cpu.cpp',
+                    'src/cuda/grid_sampler_cuda.cu', 'src/grid_sampler.cpp'
                 ]),
             make_cuda_ext(
                 name='carafe_cuda',
